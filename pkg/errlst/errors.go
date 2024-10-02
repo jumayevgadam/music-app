@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strings"
 
@@ -196,11 +197,6 @@ func ParseErrors(err error) RestErr {
 	case errors.Is(err, context.DeadlineExceeded):
 		return NewRequestTimedOutError(err.Error())
 
-	// Handle AWS errors
-	case strings.Contains(err.Error(), ErrBucketNotFound.Error()),
-		strings.Contains(err.Error(), ErrObjectNotFound.Error()):
-		return NewBadRequestError(err.Error())
-
 	// Handle SQLSTATE errors
 	case strings.Contains(err.Error(), "SQLSTATE"):
 		return ParseSqlErrors(err)
@@ -257,4 +253,32 @@ func ParseSqlErrors(err error) RestErr {
 	}
 
 	return NewBadRequestError(err.Error())
+}
+
+// ParseValidatorError parses validation errors and returns corresponding RestErr
+func ParseValidatorError(err error) RestErr {
+	validationErrs, ok := err.(validator.ValidationErrors)
+	if !ok {
+		return NewBadRequestError(err.Error()) // If not a validation error, fallback to generic error
+	}
+
+	// Collect detailed validation error messages
+	var errorMessages []string
+	for _, fieldErr := range validationErrs {
+		// For each validation error, create a message
+		errorMessage := fmt.Sprintf("Field Validation for %s failed on the %s tag", fieldErr.Field(), fieldErr.Tag())
+
+		// Append the message to the error list
+		errorMessages = append(errorMessages, errorMessage)
+	}
+
+	// Combine all messages into one string and return a Bad Request Error
+	return NewBadRequestError(strings.Join(errorMessages, ", "))
+}
+
+// Response returns is ErrorResponse, for clean syntax I took function name Response
+// Because in every package i call this errlst package httpError, serviceErr, repoErr
+// Then easily call this httpError.Response(err), serviceErr.Response(err), repoErr.Response(err)
+func Response(err error) (int, interface{}) {
+	return ParseErrors(err).Status(), ParseErrors(err)
 }

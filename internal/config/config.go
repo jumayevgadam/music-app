@@ -1,16 +1,19 @@
 package config
 
-// ** Config struct keeps all needed configurations for application
+// Config struct keeps all needed configurations for application
 type Config struct {
 	Postgres Postgres
+	Server   struct {
+		HttpPort string `envconfig:"HTTP_PORT" validate:"required"`
+	}
 }
 
-// * Postgres struct is
+// Postgres struct is
 type Postgres struct {
-	Host     string `envconfig:"db_host"`
-	Port     string `envconfig:"db_port"`
-	User     string `envconfig:"db_user"`
-	Password string `envconfig:"db_password"`
-	Name     string `envconfig:"db_name"`
-	SslMode  string `envconfig:"db_sslmode"`
+	Host     string `envconfig:"DB_HOST" validate:"required"`
+	Port     string `envconfig:"DB_PORT" validate:"required"`
+	User     string `envconfig:"DB_USER" validate:"required"`
+	Password string `envconfig:"DB_PASSWORD" validate:"required"`
+	Name     string `envconfig:"DB_NAME" validate:"required"`
+	SslMode  string `envconfig:"DB_SSLMODE" validate:"required"`
 }
