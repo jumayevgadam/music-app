@@ -2,9 +2,11 @@ package pagination
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/jumayevgadam/music-app/pkg/errlst"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -12,10 +14,10 @@ const (
 )
 
 // Compile time check to ensure PaginationQuery implements Pagination interface
-var _ Pagination = (*PaginationQuery)(nil)
+var _ PaginationOps = (*PaginationQuery)(nil)
 
 // Pagination interface keeps needed methods for pagination
-type Pagination interface {
+type PaginationOps interface {
 	SetSize(sizeQuery string) error
 	SetPage(pageQuery string) error
 	SetOrderBy(orderByQuery string)
@@ -103,4 +105,34 @@ func (q *PaginationQuery) GetSize() int {
 // GetQueryString is
 func (q *PaginationQuery) GetQueryString() string {
 	return fmt.Sprintf("page=%v&size=%v&orderBy=%s", q.Page, q.Size, q.OrderBy)
+}
+
+// GetPaginationFromCtx is
+func GetPaginationFromCtx(c echo.Context) (*PaginationQuery, error) {
+	q := &PaginationQuery{}
+
+	// set page
+	if err := q.SetPage(c.QueryParam("page")); err != nil {
+		return nil, errlst.ParseErrors(err)
+	}
+
+	// set size
+	if err := q.SetSize(c.QueryParam("size")); err != nil {
+		return nil, errlst.ParseErrors(err)
+	}
+	// set orderby
+	q.SetOrderBy(c.QueryParam("orderBy"))
+
+	return q, nil
+}
+
+// GetTotalPages is
+func GetTotalPages(totalCount int, pageSize int) int {
+	d := float64(totalCount) / float64(pageSize)
+	return int(math.Ceil(d))
+}
+
+// GetHasMore is
+func GetHasMore(currentPage int, totalCount int, pageSize int) bool {
+	return currentPage < totalCount/pageSize
 }
