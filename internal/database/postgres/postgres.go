@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jumayevgadam/music-app/internal/connection"
 	"github.com/jumayevgadam/music-app/internal/database"
@@ -10,7 +12,6 @@ import (
 	musicRepository "github.com/jumayevgadam/music-app/internal/music/repository"
 	"github.com/jumayevgadam/music-app/pkg/errlst"
 	"github.com/sirupsen/logrus"
-	"sync"
 )
 
 var _ database.DataStore = (*DataStore)(nil)
@@ -63,13 +64,13 @@ func (d *DataStore) WithTransaction(ctx context.Context, transactionFn database.
 	// transactionalDB is
 	transactionalDB := &DataStore{db: tx}
 	if err := transactionFn(transactionalDB); err != nil {
-		logrus.Errorf("[postgres][WithTransaction]: transactionFn: %w", err)
+		logrus.Println("[postgres][WithTransaction]: transactionFn: %w", err)
 		return errlst.ParseErrors(err)
 	}
 
 	// Commit the transaction if no error occurred during the transactionFn execution
 	if err := tx.Commit(ctx); err != nil {
-		logrus.Errorf("[postgres][WithTransaction]: tx.Commit: %w", err)
+		logrus.Println("[postgres][WithTransaction]: tx.Commit: %w", err)
 		return errlst.ParseErrors(err)
 	}
 

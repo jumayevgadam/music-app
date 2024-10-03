@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/jumayevgadam/music-app/internal/config"
 	"github.com/jumayevgadam/music-app/internal/connection"
 	"github.com/jumayevgadam/music-app/internal/database/postgres"
@@ -14,8 +15,6 @@ func main() {
 	if err != nil {
 		logrus.Errorf("[main][LoadConfig]: %v", err.Error())
 	}
-
-	// implement tracer here
 
 	// implement psqlDB
 	psqlDB, err := connection.GetDBClient(context.Background(), cfg.Postgres)

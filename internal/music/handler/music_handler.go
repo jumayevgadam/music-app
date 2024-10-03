@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"net/http"
+
 	songModel "github.com/jumayevgadam/music-app/internal/models"
 	musicOps "github.com/jumayevgadam/music-app/internal/music"
 	httpError "github.com/jumayevgadam/music-app/pkg/errlst"
@@ -8,7 +10,6 @@ import (
 	"github.com/jumayevgadam/music-app/pkg/tracing"
 	"github.com/labstack/echo/v4"
 	"go.opentelemetry.io/otel"
-	"net/http"
 )
 
 // SongHandler struct is
